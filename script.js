@@ -1,8 +1,11 @@
 // ===== CONFIGURAÇÃO =====
-const EMAIL = 'luminardosbaixinho@gmail.com'; // email que recebe as inscrições
-const WHATSAPP = '244950882908';              // WhatsApp de apoio se o envio falhar
+const EMAIL = 'luminardosbaixinho@gmail.com';
+const WHATSAPP = '244950882908';
 
-// ===== DOCUMENTOS (# título, - item, | linha de tabela) =====
+const WEB3FORMS_KEY = '6cccabbc-1e82-4010-8b76-e4d4faa3e05b';
+const WEB3FORMS_URL = 'https://api.web3forms.com/submit';
+
+// ===== DOCUMENTOS =====
 const REG = `
 # Introdução
 O Luminar dos Baixinhos é uma instituição que tem como prioridade a segurança da criança, o desenvolvimento de todo o seu potencial, assim como a criação de um ambiente de alegria e diversão.
@@ -165,51 +168,116 @@ Email: ${EMAIL}
 
 function md(s) {
   let o = '', ul = 0, tb = 0;
-  const cells = (l, t) => '<tr>' + l.slice(1).split('|').map(c => `<${t}>${c}</${t}>`).join('') + '</tr>';
+
+  const cells = (l, t) =>
+    '<tr>' + l.slice(1).split('|')
+      .map(c => `<${t}>${c}</${t}>`).join('') + '</tr>';
+
   s.trim().split('\n').forEach(l => {
-    l = l.trim(); if (!l) return;
-    const li = l[0] == '-', tr = l[0] == '|';
-    if (ul && !li) { o += '</ul>'; ul = 0; }
-    if (tb && !tr) { o += '</table>'; tb = 0; }
-    if (l[0] == '#') o += `<h3>${l.slice(1).trim()}</h3>`;
-    else if (li) { if (!ul) { o += '<ul>'; ul = 1; } o += `<li>${l.slice(1).trim()}</li>`; }
-    else if (tr) { if (!tb) { o += '<table>' + cells(l, 'th'); tb = 1; } else o += cells(l, 'td'); }
-    else o += `<p>${l}</p>`;
+    l = l.trim();
+    if (!l) return;
+
+    const li = l[0] === '-';
+    const tr = l[0] === '|';
+
+    if (ul && !li) {
+      o += '</ul>';
+      ul = 0;
+    }
+
+    if (tb && !tr) {
+      o += '</table>';
+      tb = 0;
+    }
+
+    if (l[0] === '#') {
+      o += `<h3>${l.slice(1).trim()}</h3>`;
+    } else if (li) {
+      if (!ul) {
+        o += '<ul>';
+        ul = 1;
+      }
+      o += `<li>${l.slice(1).trim()}</li>`;
+    } else if (tr) {
+      if (!tb) {
+        o += '<table>' + cells(l, 'th');
+        tb = 1;
+      } else {
+        o += cells(l, 'td');
+      }
+    } else {
+      o += `<p>${l}</p>`;
+    }
   });
+
   return o + (ul ? '</ul>' : '') + (tb ? '</table>' : '');
 }
-regc.innerHTML = md(REG);
-bolc.innerHTML = md(BOL);
+
+document.getElementById('regc').innerHTML = md(REG);
+document.getElementById('bolc').innerHTML = md(BOL);
+
 
 // ===== MENU RESPONSIVO =====
 const nav = document.querySelector('.nav');
 const menuToggle = document.querySelector('.menu-toggle');
+
 menuToggle?.addEventListener('click', () => {
   const opened = nav.classList.toggle('menu-open');
-  menuToggle.setAttribute('aria-expanded', String(opened));
-  menuToggle.setAttribute('aria-label', opened ? 'Fechar menu' : 'Abrir menu');
-  menuToggle.innerHTML = opened ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>' : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>'; 
-});
-document.querySelectorAll('.links a').forEach(link => link.addEventListener('click', () => {
-  nav.classList.remove('menu-open');
-  menuToggle?.setAttribute('aria-expanded', 'false');
-  if (menuToggle) { menuToggle.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>'; menuToggle.setAttribute('aria-label', 'Abrir menu'); }
-}));
 
-// Indica no menu a secção actualmente visível.
+  menuToggle.setAttribute('aria-expanded', String(opened));
+  menuToggle.setAttribute(
+    'aria-label',
+    opened ? 'Fechar menu' : 'Abrir menu'
+  );
+
+  menuToggle.innerHTML = opened
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+});
+
+document.querySelectorAll('.links a').forEach(link => {
+  link.addEventListener('click', () => {
+    nav.classList.remove('menu-open');
+
+    menuToggle?.setAttribute('aria-expanded', 'false');
+
+    if (menuToggle) {
+      menuToggle.innerHTML =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+
+      menuToggle.setAttribute('aria-label', 'Abrir menu');
+    }
+  });
+});
+
+
+// ===== INDICADOR DA SECÇÃO ACTUAL =====
 const sectionLinks = [...document.querySelectorAll('.links a[href^="#"]')];
-const trackedSections = sectionLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+const trackedSections = sectionLinks
+  .map(a => document.querySelector(a.getAttribute('href')))
+  .filter(Boolean);
+
 if ('IntersectionObserver' in window) {
   const sectionObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
+
       sectionLinks.forEach(a => {
         const active = a.getAttribute('href') === '#' + entry.target.id;
-        if (active) a.setAttribute('aria-current', 'location');
-        else a.removeAttribute('aria-current');
+
+        if (active) {
+          a.setAttribute('aria-current', 'location');
+        } else {
+          a.removeAttribute('aria-current');
+        }
       });
     });
-  }, { rootMargin: '-22% 0px -65% 0px', threshold: 0 });
+  }, {
+    rootMargin: '-22% 0px -65% 0px',
+    threshold: 0
+  });
+
   trackedSections.forEach(section => sectionObserver.observe(section));
 }
 
@@ -217,61 +285,178 @@ if ('IntersectionObserver' in window) {
 // ===== JANELAS =====
 document.addEventListener('click', e => {
   const o = e.target.closest('[data-open]');
-  if (o) { e.preventDefault(); const target = document.getElementById(o.dataset.open); if (target && !target.open) target.showModal(); return; }
-  if (e.target.closest('[data-close]')) { e.target.closest('dialog').close(); return; }
-  if (e.target.tagName == 'DIALOG') { e.target.close(); return; }
+
+  if (o) {
+    e.preventDefault();
+
+    const target = document.getElementById(o.dataset.open);
+
+    if (target && !target.open) target.showModal();
+
+    return;
+  }
+
+  if (e.target.closest('[data-close]')) {
+    e.target.closest('dialog').close();
+    return;
+  }
+
+  if (e.target.tagName === 'DIALOG') {
+    e.target.close();
+    return;
+  }
+
   const p = e.target.closest('.ph img');
-  if (p) { const d = document.getElementById('foto'), i = d.querySelector('img'); i.src = p.src; i.alt = p.alt; d.showModal(); }
+
+  if (p) {
+    const d = document.getElementById('foto');
+    const i = d.querySelector('img');
+
+    i.src = p.src;
+    i.alt = p.alt;
+
+    d.showModal();
+  }
 });
 
+
 // ===== TÍTULO COM LETRAS SALTITANTES =====
-const C = ['#FF3D8B', '#FF7A1A', '#17A85A', '#1E8FE0', '#7C4DEB'];
+const C = [
+  '#FF3D8B',
+  '#FF7A1A',
+  '#17A85A',
+  '#1E8FE0',
+  '#7C4DEB'
+];
+
 const t = document.getElementById('titulo');
 let n = 0;
+
 t.innerHTML = t.textContent.split(' ').map(w =>
-  '<span class="w">' + [...w].map(c => `<span class="l" style="--c:${C[n % 5]};--d:${(n++ * .05).toFixed(2)}s">${c}</span>`).join('') + '</span>'
+  '<span class="w">' +
+  [...w].map(c =>
+    `<span class="l" style="--c:${C[n % 5]};--d:${(n++ * .05).toFixed(2)}s">${c}</span>`
+  ).join('') +
+  '</span>'
 ).join(' ');
+
 
 // ===== ESTRELAS A SUBIR =====
 const st = document.querySelector('.stars');
+
 for (let i = 0; i < 22; i++) {
-  const b = document.createElement('b'), s = 10 + Math.random() * 18;
-  b.style.cssText = `left:${Math.random() * 100}%;width:${s}px;height:${s}px;color:${C[i % 5]};animation-duration:${14 + Math.random() * 16}s;animation-delay:${-Math.random() * 30}s`;
+  const b = document.createElement('b');
+  const s = 10 + Math.random() * 18;
+
+  b.style.cssText =
+    `left:${Math.random() * 100}%;width:${s}px;height:${s}px;color:${C[i % 5]};animation-duration:${14 + Math.random() * 16}s;animation-delay:${-Math.random() * 30}s`;
+
   st.append(b);
 }
+
 
 // ===== APARECER AO ROLAR =====
 const io = new IntersectionObserver(es => es.forEach(e => {
   if (!e.isIntersecting) return;
+
   e.target.classList.add('in');
-  e.target.addEventListener('transitionend', () => e.target.style.setProperty('--d', '0s'), { once: true });
+
+  e.target.addEventListener('transitionend', () => {
+    e.target.style.setProperty('--d', '0s');
+  }, { once: true });
+
   io.unobserve(e.target);
 }), { threshold: .12 });
-document.querySelectorAll('.rv').forEach((e, i) => { e.style.setProperty('--d', (i % 4) * .09 + 's'); io.observe(e); });
 
-// ===== FORMULÁRIO DE INSCRIÇÃO =====
-const f = document.getElementById('f'), msg = document.getElementById('msg');
+document.querySelectorAll('.rv').forEach((e, i) => {
+  e.style.setProperty('--d', (i % 4) * .09 + 's');
+  io.observe(e);
+});
+
+
+// ===== FORMULÁRIO DE INSCRIÇÃO — WEB3FORMS =====
+const f = document.getElementById('f');
+const msg = document.getElementById('msg');
+
 f.addEventListener('submit', async e => {
   e.preventDefault();
-  const d = Object.fromEntries(new FormData(f));
-  if (d._honey) return;
-  const b = f.querySelector('[type=submit]');
-  b.disabled = true; msg.className = ''; msg.textContent = 'A enviar…';
-  try {
-    const r = await fetch('https://formsubmit.co/ajax/' + EMAIL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ ...d, _subject: 'Nova inscrição – ' + d['Nome da criança'], _template: 'table', _captcha: 'false' })
-    });
-    const j = await r.json();
-    if (!r.ok || String(j.success) !== 'true') throw 0;
-    f.reset(); msg.className = 'ok';
-    msg.textContent = '🎉 Inscrição enviada! Entraremos em contacto em breve.';
-  } catch {
-    const txt = Object.entries(d).filter(([k, v]) => v && k[0] != '_').map(([k, v]) => k + ': ' + v).join('\n');
-    msg.className = 'err';
-    msg.innerHTML = 'Não foi possível enviar agora. <a href="https://wa.me/' + WHATSAPP + '?text=' +
-      encodeURIComponent('Inscrição – Luminar dos Baixinhos\n' + txt) + '" target="_blank" rel="noopener">Enviar pelo WhatsApp</a>';
+
+  const formData = new FormData(f);
+
+  // Protecção honeypot contra bots.
+  if (formData.get('_honey') || formData.get('botcheck')) {
+    return;
   }
-  b.disabled = false;
+
+  const b = f.querySelector('[type="submit"]');
+
+  b.disabled = true;
+  msg.className = '';
+  msg.textContent = 'A enviar inscrição…';
+
+  try {
+    const data = Object.fromEntries(formData.entries());
+
+    // Configuração Web3Forms.
+    data.access_key = WEB3FORMS_KEY;
+    data.subject = 'Nova inscrição — Luminar dos Baixinhos';
+    data.from_name = 'Luminar dos Baixinhos';
+
+    // Remove campos internos de protecção.
+    delete data._honey;
+    delete data.botcheck;
+
+    const response = await fetch(WEB3FORMS_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.success !== true) {
+      throw new Error(
+        result.message ||
+        result.body?.message ||
+        'Não foi possível enviar a inscrição.'
+      );
+    }
+
+    f.reset();
+
+    msg.className = 'ok';
+    msg.textContent =
+      'Inscrição enviada com sucesso! A instituição entrará em contacto em breve.';
+
+  } catch (error) {
+    console.error('Erro no envio da inscrição:', error);
+
+    msg.className = 'err';
+
+    msg.textContent =
+      'Não foi possível enviar a inscrição neste momento. Tente novamente ou contacte a instituição pelo WhatsApp.';
+
+    // Criar link de contacto sem incluir dados pessoais da criança.
+    const link = document.createElement('a');
+
+    link.href =
+      'https://wa.me/' + WHATSAPP +
+      '?text=' +
+      encodeURIComponent(
+        'Olá! Estou a tentar efectuar uma inscrição no Luminar dos Baixinhos, mas estou com dificuldades no formulário.'
+      );
+
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = 'Contactar pelo WhatsApp';
+
+    msg.appendChild(document.createElement('br'));
+    msg.appendChild(link);
+
+  } finally {
+    b.disabled = false;
+  }
 });

@@ -5,11 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Luminar dos Baixinhos – Colégio e Creche | Mulemba, Luanda</title>
 <meta name="description" content="Colégio e creche em Luanda: berçário e maternal dos 0 aos 36 meses. Acolher com carinho, educar com propósito e iluminar futuros.">
-<link rel="icon" href="img/favicon.png">
+<link rel="icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script
+  defer
+  src="https://cloud.umami.is/script.js"
+  data-website-id="b4a2d735-5a7a-4a9f-804f-9d0e0c81e552"
+  data-domains="luminardosbaixinhos.vercel.app">
+</script>
 </head>
 <body>
 
@@ -162,7 +168,7 @@
     <label>Nome completo*<input name="Encarregado de educação" required autocomplete="name"></label>
     <label>Parentesco*<select name="Parentesco" required><option value="">Escolher…</option><option>Mãe</option><option>Pai</option><option>Avó / Avô</option><option>Tio / Tia</option><option>Outro</option></select></label>
     <label>Telefone / WhatsApp*<input name="Telefone" type="tel" required autocomplete="tel"></label>
-    <label>Email<input name="Email" type="email" autocomplete="email"></label>
+    <label>Email<input name="email" type="email" autocomplete="email"></label>
     <label class="w">Morada (bairro e município)<input name="Morada" autocomplete="street-address"></label>
   </div></fieldset>
   <fieldset><legend>A criança</legend><div class="fg">
@@ -181,6 +187,12 @@
   </div></fieldset>
   <label class="chk"><input type="checkbox" name="Aceita o regulamento" value="Sim" required> Li e aceito o <a href="#" data-open="reg">Regulamento Interno</a>.</label>
   <input name="_honey" hidden tabindex="-1" autocomplete="off">
+  <input
+  type="checkbox"
+  name="botcheck"
+  tabindex="-1"
+  autocomplete="off"
+  style="display:none">
   <button class="btn pulse" type="submit">Enviar inscrição</button>
   <p id="msg" role="status"></p>
 </form></div></dialog>
